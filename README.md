@@ -1,22 +1,19 @@
-# nuxt-base
-
-> My ultimate Nuxt.js project
-
-## Build Setup
-
-``` bash
-# install dependencies
-$ yarn install
-
-# serve with hot reload at localhost:3000
-$ yarn dev
-
-# build for production and launch server
-$ yarn build
-$ yarn start
-
-# generate static project
-$ yarn generate
+# 開発環境
+docker-composeサンプル
+```yml
+version: '3'
+services:
+  nuxt:
+    build: nuxt-base
+    restart: always
+    volumes:
+      - ./nuxt-base:/usr/src/app
 ```
-
-For detailed explanation on how things work, check out [Nuxt.js docs](https://nuxtjs.org).
+初回起動時
+```bash
+docker-compose run --rm nuxt ash -c "yarn && yarn build"
+```
+リビルド&再起動
+```bash
+docker-compose exec nuxt yarn build && docker-compose restart nuxt
+```
