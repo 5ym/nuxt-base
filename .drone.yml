@@ -1,0 +1,43 @@
+kind: pipeline
+name: default
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      username: 5ym
+      password:
+        from_secret: github_package
+      repo: docker.pkg.github.com/${DRONE_REPO}/app
+      registry: docker.pkg.github.com
+      tags:
+        - latest
+        - ${DRONE_BUILD_NUMBER}
+
+  - name: deploy
+    image: docker
+    volumes:
+    - name: dockersock
+      path: /var/run/docker.sock
+    environment:
+      github_package:
+        from_secret: github_package
+    commands:
+      - docker login docker.pkg.github.com -u 5ym -p $github_package
+      - docker image pull docker.pkg.github.com/${DRONE_REPO}/app:${DRONE_BUILD_NUMBER}
+      - docker service update --image docker.pkg.github.com/${DRONE_REPO}/app:${DRONE_BUILD_NUMBER} deploy_app
+
+  - name: slack
+    image: plugins/slack
+    settings:
+      webhook:
+        from_secret: slack_webhook
+      channel: notify_drone
+
+volumes:
+- name: dockersock
+  host:
+    path: /var/run/docker.sock
+
+trigger:
+  branch:
+    - master
